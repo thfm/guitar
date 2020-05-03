@@ -118,3 +118,90 @@ impl GuitarString {
         }
     }
 }
+
+pub enum Size {
+    Small,
+    Medium,
+    Large,
+}
+
+pub struct FretDiagram {
+    locations: Vec<FretboardLocation>,
+    size: Size,
+}
+
+impl FretDiagram {
+    pub fn new(locations: Vec<FretboardLocation>, size: Size) -> FretDiagram {
+	FretDiagram { locations, size }
+    }
+}
+
+impl fmt::Display for FretDiagram {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	let highest_fret = self.locations
+	    .iter()
+	    .fold(5, |acc, fbl| std::cmp::max(fbl.fret_number, acc));
+	
+        match self.size {
+            Size::Small => {
+                writeln!(f, "______  ")?;
+
+                for fret in 1..=highest_fret {
+		    'sstrings: for string in (1..=6).rev() {
+			for loc in self.locations.iter() {
+			    if loc.fret_number == fret && loc.string_number == string {
+				write!(f, "*")?;
+				continue 'sstrings;
+			    }
+			}
+			write!(f, "|")?;
+		    }
+                    write!(f, " {}\n", fret)?;
+		}
+            },
+            Size::Medium => {
+                writeln!(f, "______\n------")?;
+		for fret in 1..=highest_fret {
+		    'mstrings: for string in (1..=6).rev() {
+			for loc in self.locations.iter() {
+			    if loc.fret_number == fret && loc.string_number == string {
+				write!(f, "*")?;
+				continue 'mstrings;
+			    }
+			}
+			write!(f, "|")?;
+                    }
+		    write!(f, "  {}\n------\n", fret)?;
+                }
+            },
+            Size::Large => {
+                writeln!(f, "_|_|_|_|_|_|_\n-|-|-|-|-|-|-")?;
+
+                for fret in 1..=highest_fret {
+                    let mut symbols = std::string::String::new();
+
+		    'lstrings: for string in (1..=6).rev() {
+			for loc in self.locations.iter() {
+			    if loc.fret_number == fret && loc.string_number == string {
+				symbols.push('*');
+				continue 'lstrings;
+			    }
+			}
+			symbols.push('|');
+                    }
+                    let mut symbols = symbols.chars();
+                    writeln!(f, " | | | | | | \n {} {} {} {} {} {}  {}\n |-|-|-|-|-| ",
+                             symbols.next().unwrap(),
+                             symbols.next().unwrap(),
+                             symbols.next().unwrap(),
+                             symbols.next().unwrap(),
+                             symbols.next().unwrap(),
+                             symbols.next().unwrap(),
+                             fret)?;
+                    
+                }
+            },
+        }
+        Ok(())
+    }
+}
