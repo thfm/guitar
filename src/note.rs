@@ -17,7 +17,7 @@ impl Note {
         Note { value }
     }
 
-    pub(crate) fn disregard_octave(&self) -> Self {
+    pub(crate) fn disregard_octave(self) -> Self {
         Self {
             value: self.value % 12,
         }
